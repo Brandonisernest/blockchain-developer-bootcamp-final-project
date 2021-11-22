@@ -60,16 +60,23 @@ contract SecretSanta {
         _;
     }
     
+    modifier oneEntryOnly() {
+        //hacky way to ensure user is not already in contract. Maybe think of something el;se
+        require(giftOriginatorMapping[msg.sender].giftValue == 0, "Already in secret santa!");
+        _;
+    }
     
     
-    function enterSecretsanta(string memory _giftName, uint _giftValue, string memory _giftUrl) public {
+    function enterSecretsanta(string memory _giftName, uint _giftValue, string memory _giftUrl) public oneEntryOnly {
         require(_giftValue > 0 ether, "You need more than zero to enter secret santa!");
         uint _groupNumber;
         
-        if(_giftValue >= 1 ether && _giftValue < 5 ether){
+        uint giftValueEth = _giftValue * 1 ether;
+        
+        if(giftValueEth >= 1 ether && giftValueEth < 5 ether){
             _groupNumber = 1;
         }
-        else if (_giftValue >= 5 ether && _giftValue < 10 ether){
+        else if (giftValueEth >= 5 ether && giftValueEth < 10 ether){
             _groupNumber = 2;
         }
         else {
