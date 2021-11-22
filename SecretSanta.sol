@@ -30,6 +30,13 @@ General walkthrough
 12. You transfer ownership of giftStruct via Mapping
     A) mapping(address => giftStruct);
     
+    
+    
+To Dos:
+1. Create events interface 
+    A) When address enters the contract
+2. Create contract interface
+    
 
 */
 
@@ -72,8 +79,12 @@ contract SecretSanta {
         _;
     }
     
+    modifier maxValue() {
+        require(msg.value < 90 ether, "Value is too high! This is a reasonable secret santa");
+        _;
+    }
     
-    function enterSecretsanta(string memory _giftName, string memory _giftUrl) public payable oneEntryOnly {
+    function enterSecretsanta(string memory _giftName, string memory _giftUrl) public payable oneEntryOnly maxValue {
         require(msg.value > 0 ether, "You need more than zero to enter secret santa!");
         uint _groupNumber;
         
