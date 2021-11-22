@@ -12,17 +12,14 @@ General walkthrough
 5. No limit to entrants to a group. 
 6. Within the santa Struct, include:
     A) Gift Struct
-    B) Group Struct
-    C) Mapping with price range to Gift Struct
-    D) Mapping with address to Gift Struct
+    B) Mapping with price range to Gift Struct
+    C) Mapping with address to Gift Struct
         a) Only allow one address to enter one gift struct for now
-7. Within each group Struct:
-    C) Mapping of Address => "string" home address? (optional)
-    B) Uint counter for 
-8. Gift struct:
+7. Gift struct:
     A) Name of Gift
     B) Value of Gift
     C) Link of Gift
+    D) Based on value of Gift, address is assigned group number
 9. After a certain time (block height)has passed and only one person is in a group struct, close out the struct and allow the addresses to enter into a new struct with new price
 10. Pseudorandomly assign gift to each person
     A) Make sure the person can't give gift to themselves
@@ -42,29 +39,20 @@ contract SecretSanta {
     //who created the gift struct?
     mapping(address => giftStruct) public giftOriginatorMapping;
     //who owns the gift Struct
-    mapping(address => giftStruct) public giftOwnershipMapping;
-    //what is the value of the groupStruct
-    mapping(uint => groupStruct) public giftValueMapping;
-    
-    struct groupStruct {
-        uint giftValueRange;
-        giftStruct giftStruct;
-        uint participantCounter;
-        //mailing address mapping optional for now
-        // mapping(address => string) mailingAddressMapping;
-        
-    }
+    mapping(address => giftStruct) giftOwnershipMapping;
+    //what address belongs to what group based on giftValue
+    mapping(address => uint) public groupMapping;
     
     struct giftStruct{
         string giftName;
         uint giftValue;
         string giftUrl;
+        uint groupNumber;
     }
     
     constructor() public {
         santa = msg.sender;
-        //anything else?
-        
+
     }
     
     modifier onlySanta() {
@@ -73,48 +61,34 @@ contract SecretSanta {
     }
     
     
-    function groupStructHandler(giftStruct memory _giftStruct) public {
-        
-        uint newGiftValue = _giftStruct.giftValue;
-        //alter in the future to add in oracle data
-        //initial giftValues are ridiculous for testing purposes
-        if(newGiftValue >= 1 ether && newGiftValue< 5 ether) {
-             groupStruct memory newGroupStruct = groupStruct({
-                 giftValueRange: 1,
-                 giftStruct :_giftStruct,
-                 //work on the counter later
-                 participantCounter: 0
-             });
-             
-             giftValueMapping[1] = newGroupStruct;
-        }
-        else if (newGiftValue >= 5 ether && newGiftValue < 10 ether) {
-             groupStruct memory newGroupStruct = groupStruct({
-                 giftValueRange: 2,
-                 giftStruct :_giftStruct,
-                 //work on the counter later
-                 participantCounter: 0
-             });
-             
-             giftValueMapping[2] = newGroupStruct;
-        }
-        
-        
-    }
     
     function enterSecretsanta(string memory _giftName, uint _giftValue, string memory _giftUrl) public {
+        require(_giftValue > 0 ether, "You need more than zero to enter secret santa!");
+        uint _groupNumber;
         
+        if(_giftValue >= 1 ether && _giftValue < 5 ether){
+            _groupNumber = 1;
+        }
+        else if (_giftValue >= 5 ether && _giftValue < 10 ether){
+            _groupNumber = 2;
+        }
+        else {
+            _groupNumber = 3;
+        }
+        
+        //front end will require just these inputs
         giftStruct memory newGiftStruct = giftStruct({
             giftName : _giftName,
             giftValue : _giftValue,
-            giftUrl : _giftUrl
+            giftUrl : _giftUrl,
+            groupNumber : _groupNumber
         });
         
         //add to giftOriginatorMapping;
         giftOriginatorMapping[msg.sender] = newGiftStruct;
         
-        //add to group
-        groupStructHandler(newGiftStruct);
+        //assign msg.sender a group number (based on value)
+        groupMapping[msg.sender] = _groupNumber;
         
     }
     
