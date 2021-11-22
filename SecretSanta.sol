@@ -21,5 +21,6 @@ General walkthrough
 7. After a certain time (block height)has passed and not enough people entered a santa struct, close out the struct and allow the addresses to enter into a new struct with new price
 8. Pseudorandomly assign gift to each person
     A) Make sure the person can't give gift to themselves
+9. Allow person to choose to either receive the gift or just keep the cash value
 
 */
