@@ -1,6 +1,8 @@
 /*
 General walkthrough
 
+**Secret Santa NOT White Elephant
+
 1. Pay to enter Main Secret Santa Smart contract
 2. The floor price needs $20 USD (0.004803 Ether as of 11/30) - implement oracle? - Chainlink for Eth price?
     A) https://www.google.com/search?q=how+to+use+chainlink+oracle+in+solidity&oq=how+to+use+chainlink+oracle+in+solidity&aqs=chrome..69i57.6921j0j1&sourceid=chrome&ie=UTF-8
@@ -42,6 +44,10 @@ contract SecretSanta {
     mapping(address => giftStruct) giftOwnershipMapping;
     //what address belongs to what group based on giftValue
     mapping(address => uint) public groupMapping;
+    //arrays
+    address[] public groupOneArray;
+    address[] public groupTwoArray;
+    address[] public groupThreeArray;
     
     struct giftStruct{
         string giftName;
@@ -67,26 +73,29 @@ contract SecretSanta {
     }
     
     
-    function enterSecretsanta(string memory _giftName, uint _giftValue, string memory _giftUrl) public oneEntryOnly {
-        require(_giftValue > 0 ether, "You need more than zero to enter secret santa!");
+    function enterSecretsanta(string memory _giftName, string memory _giftUrl) public payable oneEntryOnly {
+        require(msg.value > 0 ether, "You need more than zero to enter secret santa!");
         uint _groupNumber;
         
-        uint giftValueEth = _giftValue * 1 ether;
+        // uint giftValueEth = msg.value * 1 ether;
         
-        if(giftValueEth >= 1 ether && giftValueEth < 5 ether){
+        if(msg.value >= 1 ether && msg.value < 5 ether){
             _groupNumber = 1;
+            groupOneArray.push(msg.sender);
         }
-        else if (giftValueEth >= 5 ether && giftValueEth < 10 ether){
+        else if (msg.value >= 5 ether && msg.value < 10 ether){
             _groupNumber = 2;
+            groupTwoArray.push(msg.sender);
         }
         else {
             _groupNumber = 3;
+            groupThreeArray.push(msg.sender);
         }
         
         //front end will require just these inputs
         giftStruct memory newGiftStruct = giftStruct({
             giftName : _giftName,
-            giftValue : _giftValue,
+            giftValue : msg.value,
             giftUrl : _giftUrl,
             groupNumber : _groupNumber
         });
@@ -96,6 +105,20 @@ contract SecretSanta {
         
         //assign msg.sender a group number (based on value)
         groupMapping[msg.sender] = _groupNumber;
+        
+    }
+    
+    //helper function
+    function getGroupParticipants(uint _groupNumber) public view returns(address[] memory){
+        if(_groupNumber == 1){
+            return groupOneArray;
+        }
+         else if(_groupNumber == 2){
+            return groupTwoArray;
+        }
+         else if (_groupNumber == 3){
+            return groupThreeArray;
+        }
         
     }
     
