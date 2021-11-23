@@ -52,7 +52,7 @@ contract SecretSanta {
     //who created the gift struct?
     mapping(address => giftStruct) public giftOriginatorMapping;
     //who owns the gift Struct
-    mapping(address => giftStruct) giftOwnershipMapping;
+    mapping(address => giftStruct) private giftOwnershipMapping;
     //gift giving mapping
     mapping(address => address) giftDestinationMapping;
     //mapping used to order entrants
@@ -108,7 +108,7 @@ contract SecretSanta {
     }
     
     modifier endTimeReached(){
-        require(block.timestamp <= endTime, "You missed your chance!");
+        require(block.timestamp < endTime, "You missed your chance!");
         _;
     }
     
@@ -143,13 +143,13 @@ contract SecretSanta {
     }
     
     //santa distributes gift one endTime has passed
-    function distributeGifts() public payable onlySanta{
-        require(block.timestamp > endTime);
+    // function distributeGifts() public payable onlySanta{
+    //     require(block.timestamp >= endTime);
         
-        //All I need to do is reassign gift ownership
+    //     //All I need to do is reassign gift ownership
         
         
-    }
+    // }
     
     //helper functions
     function getGroupParticipants() public view returns(address[] memory){
