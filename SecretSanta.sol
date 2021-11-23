@@ -13,73 +13,11 @@ To Dos:
 2. Create contract interface
 3. Allow new entrant to input usd and have the app convert usd to wei
     
-    
-Chainlink price Data
-https://blog.chain.link/fetch-current-crypto-price-data-solidity/
 
-
-KOVAN faucet
-https://faucets.chain.link/
-https://ethdrop.dev/
-
-MM add: 0xb89A6890142B12aC79Ad27b481B8c3BfCBC711e5
-
-
-Chainlink returns USD * 10^8
 */
 
 pragma solidity 0.8.6;
 
-//importing chainlink
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-//-------------------
-//-------------------
-//-------------------
-// This example code is designed to quickly deploy an example contract using Remix.
-contract PriceConsumerV3 {
-
-    AggregatorV3Interface internal priceFeed;
-
-    /**
-     * Network: Kovan
-     * Aggregator: ETH/USD
-     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
-     */
-    constructor() public {
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
-    }
-
-    /**
-     * Returns the latest price
-     */
-    // function getLatestPrice() public view returns (int) {
-    //     (
-    //         uint80 roundID, 
-    //         int price,
-    //         uint startedAt,
-    //         uint timeStamp,
-    //         uint80 answeredInRound
-    //     ) = priceFeed.latestRoundData();
-    //     return price;
-    // }
-    
-    //my version
-    
-    function getLatestPrice() public view returns (int) {
-        (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
-        return price;
-    }
-}
-
-
-// 434110000000
-// 434100000000
 interface EventsInterface {
      struct giftStruct{
         string giftName;
@@ -98,8 +36,7 @@ interface SecretSantaInterface is EventsInterface{
 
 }
 
-contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
-    // contract SecretSanta is SecretSantaInterface{
+contract SecretSanta is SecretSantaInterface{
     //owner of the contract. In case for permissioning
     address public santa;
     //when entrants are barred from entering and when gifts get distributed
@@ -119,15 +56,7 @@ contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
-    //let's keep this secret santa modest. $20USD limit
-    //Times 10^7 to match up with chainlink price format
-    int public latestEthUSD = getLatestPrice();
-    //convert eth to wei
-    int weiAmt = 10**18;
-    //budget cap in wei ($20 in wei)
-    int public budgetCapUSD =  ((20 * (10 ** 8)) / latestEthUSD) * weiAmt;
-    // int public budgetCapUSD = 20 * (10**8) * weiAmt;
-  
+
     
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
@@ -161,8 +90,7 @@ contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
     }
     
     modifier maxValue() {
-        require(msg.value < (budgetCapUSD * 1 wei), "Value is too high! This is a reasonable secret santa");
-        // require(msg.value < 1 ether);
+        require(msg.value < 1 ether);
         _;
     }
     
