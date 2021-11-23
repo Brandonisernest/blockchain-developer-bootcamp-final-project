@@ -12,9 +12,41 @@ To Dos:
     A) When address enters the contract
 2. Create contract interface
     
+    
+Chainlink price Data
+https://blog.chain.link/fetch-current-crypto-price-data-solidity/
+
+
+KOVAN faucet
+https://faucets.chain.link/
+https://ethdrop.dev/
+
+MM add: 0xb89A6890142B12aC79Ad27b481B8c3BfCBC711e5
 */
 
 pragma solidity 0.8.6;
+
+//importing chainlink
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+contract EthPriceFeed{
+    AggregatorV3Interface internal priceFeed;
+    
+    //0x9326BFA02ADD2366b30bacB125260Af641031331 is the ETH/USD price feed reference contract
+    priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+    
+    
+    function getLatestPrice() public view returns (int) {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
+}
 
 interface EventsInterface {
      struct giftStruct{
@@ -82,10 +114,12 @@ contract SecretSanta is SecretSantaInterface{
         arbitraryCounter++;
     }
     
-    modifier onlySanta() {
-        require(msg.sender == santa, 'Only Santa can do this!');
-        _;
-    }
+    //didn't use...
+    
+    // modifier onlySanta() {
+    //     require(msg.sender == santa, 'Only Santa can do this!');
+    //     _;
+    // }
     
     modifier oneEntryOnly() {
         //hacky way to ensure user is not already in contract. Maybe think of something el;se
