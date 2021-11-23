@@ -11,6 +11,7 @@ To Dos:
 1. Create events interface 
     A) When address enters the contract
 2. Create contract interface
+3. Allow new entrant to input usd and have the app convert usd to wei
     
     
 Chainlink price Data
@@ -97,7 +98,8 @@ interface SecretSantaInterface is EventsInterface{
 
 }
 
-contract SecretSanta is SecretSantaInterface{
+contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
+    // contract SecretSanta is SecretSantaInterface{
     //owner of the contract. In case for permissioning
     address public santa;
     //when entrants are barred from entering and when gifts get distributed
@@ -119,8 +121,12 @@ contract SecretSanta is SecretSantaInterface{
     uint arbitraryCounter = 0;
     //let's keep this secret santa modest. $20USD limit
     //Times 10^7 to match up with chainlink price format
-    uint constant budgetCap = 20 * (10^7);
-    
+    int public latestEthUSD = getLatestPrice();
+    //convert eth to wei
+    int weiAmt = 10**18;
+    //budget cap in wei ($20 in wei)
+    int public budgetCapUSD =  ((20 * (10 ** 8)) / latestEthUSD) * weiAmt;
+    // int public budgetCapUSD = 20 * (10**8) * weiAmt;
   
     
     //constructor where first entrant (Santa) needs to particpate too
@@ -147,12 +153,6 @@ contract SecretSanta is SecretSantaInterface{
         arbitraryCounter++;
     }
     
-    //didn't use...
-    
-    // modifier onlySanta() {
-    //     require(msg.sender == santa, 'Only Santa can do this!');
-    //     _;
-    // }
     
     modifier oneEntryOnly() {
         //hacky way to ensure user is not already in contract. Maybe think of something el;se
@@ -161,7 +161,8 @@ contract SecretSanta is SecretSantaInterface{
     }
     
     modifier maxValue() {
-        require(msg.value < budgetCap, "Value is too high! This is a reasonable secret santa");
+        require(msg.value < (budgetCapUSD * 1 wei), "Value is too high! This is a reasonable secret santa");
+        // require(msg.value < 1 ether);
         _;
     }
     
