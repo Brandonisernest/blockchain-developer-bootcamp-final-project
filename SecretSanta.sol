@@ -60,7 +60,7 @@ contract SecretSanta {
     //arrays
     address[] public groupParticipantsArray;
     //Guard
-    address constant GUARD = address(1);
+    address public GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
     
@@ -70,11 +70,25 @@ contract SecretSanta {
         string giftUrl;
     }
     
-    constructor() public {
-        santa = msg.sender;
+    
+    //constructor where first entrant (Santa) needs to particpate too
+    constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
+        require(msg.value > 0 ether, "C'mon Santa...you gotta pay up too!");
         //arbitrary endTime
         endTime = block.timestamp * 2;
+        
+        //Deployer is the first entrant
+        santa = msg.sender;
+        //This ensures that a gift is always sent to an active address (assuming link list method)
+        GUARD = santa;
         giftDestinationMapping[GUARD] = GUARD;
+        
+        //santa's gift struct
+        giftStruct memory firstGiftStruct = giftStruct({
+            giftName : _firstGiftName,
+            giftValue : msg.value,
+            giftUrl : _firstGiftUrl
+        });
     }
     
     modifier onlySanta() {
@@ -98,7 +112,7 @@ contract SecretSanta {
         _;
     }
     
-    function enterSecretsanta(string memory _giftName, string memory _giftUrl) public payable oneEntryOnly maxValue endTimeReached{
+    function enterSecretSanta(string memory _giftName, string memory _giftUrl) public payable oneEntryOnly maxValue endTimeReached{
         require(msg.value > 0 ether, "You need more than zero to enter secret santa!");
       
         //front end will require just these inputs
@@ -121,9 +135,11 @@ contract SecretSanta {
         giftDestinationMapping[msg.sender] = giftDestinationMapping[index];
         giftDestinationMapping[index] = msg.sender;
         
+        address prevEntrant = _findPrevEntrant(msg.sender);
+        //the new entrant will own the last entrants gift.
+        giftOwnershipMapping[msg.sender] = giftOriginatorMapping[prevEntrant];
         //increment counter
         arbitraryCounter++;
-        
     }
     
     //santa distributes gift one endTime has passed
@@ -135,7 +151,7 @@ contract SecretSanta {
         
     }
     
-    //helper function
+    //helper functions
     function getGroupParticipants() public view returns(address[] memory){
         return groupParticipantsArray;
         
@@ -150,7 +166,6 @@ contract SecretSanta {
                    (nextAddress == GUARD || newValue > rankMapping[nextAddress]);
 
     }
-
 
     //returns the index of the value, which is an address
     function _findIndex(uint256 newValue) 
@@ -167,5 +182,20 @@ contract SecretSanta {
             }
 
         }
+        
+    function _isPrevStudent(address _address, address _prevEntrant) internal view returns(bool) {
+    return giftDestinationMapping[_prevEntrant] == _address;
+        
+    }
+    
+    function _findPrevEntrant(address _address) internal view returns(address) {
+        address currentAddress = GUARD;
+        while(giftDestinationMapping[currentAddress] != GUARD) {
+            if(_isPrevStudent(_address, currentAddress))
+                return currentAddress;
+            currentAddress = giftDestinationMapping[currentAddress];
+        }
+        return address(0);
+    }
     
 }
