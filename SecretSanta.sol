@@ -139,15 +139,13 @@ contract SecretSanta {
         giftDestinationMapping[msg.sender] = giftDestinationMapping[index];
         giftDestinationMapping[index] = msg.sender;
         
-        // address prevEntrant = _findPrevEntrant(msg.sender);
-        address nextEntrant = _findNextEntrant(msg.sender);
+        address prevEntrant = _findPrevEntrant(msg.sender);
         address lastEntrant = _findPrevEntrant(GUARD);
         
-        //Since the linkList adds new entrants to the FRONT not the END of the linkedlist, I need to have prevEntrant point to msg.sender
-        giftOwnershipMapping[lastEntrant] = giftOriginatorMapping[santa];
-        //the new entrant will own the last entrants gift.
-        //Since the linkList adds new entrants to the FRONT not the END of the linkedlist, I need to have prevEntrant point to msg.sender
-        giftOwnershipMapping[nextEntrant] = giftOriginatorMapping[msg.sender];
+        //new entrant goes after previous entrant instead of before
+        giftOwnershipMapping[msg.sender] = giftOriginatorMapping[prevEntrant];
+        //give santa (first entrant) the gift of the last entrant
+        giftOwnershipMapping[santa] = giftOriginatorMapping[lastEntrant];
         //increment counter
         arbitraryCounter++;
     }
@@ -165,8 +163,8 @@ contract SecretSanta {
         internal 
         view 
         returns(bool) {
-            return (prevAddress == GUARD || rankMapping[prevAddress] >= newValue) && 
-                   (nextAddress == GUARD || newValue > rankMapping[nextAddress]);
+            return (prevAddress == GUARD || rankMapping[prevAddress] <= newValue) && 
+                   (nextAddress == GUARD || newValue < rankMapping[nextAddress]);
 
     }
 
@@ -174,7 +172,7 @@ contract SecretSanta {
     function _findIndex(uint256 newValue) 
         internal 
         view 
-        returns(address) {
+        returns(address _candidateAddress) {
             address candidateAddress = GUARD;
 
             while(true){
@@ -189,11 +187,7 @@ contract SecretSanta {
     function _isPrevEntrant(address _address, address _prevEntrant) internal view returns(bool) {
     return giftDestinationMapping[_prevEntrant] == _address;
     }
-    
-    function _isNextEntrant(address _address, address _nextEntrant) internal view returns(bool) {
-    return giftDestinationMapping[_address] == _nextEntrant;
-    }
-    
+  
     function _findPrevEntrant(address _address) public view returns(address) {
         
         
@@ -209,16 +203,5 @@ contract SecretSanta {
         }
         return address(0);
     }
-    
-    function _findNextEntrant(address _address) public view returns(address) {
-        
-        address currentAddress = GUARD;
-        while(giftDestinationMapping[currentAddress] != GUARD) {
-            if(_isNextEntrant(_address, currentAddress))
-                return currentAddress;
-            currentAddress = giftDestinationMapping[currentAddress];
-        }
-        return address(0);
-    }
-    
+  
 }
