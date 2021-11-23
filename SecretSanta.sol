@@ -1,37 +1,9 @@
 /*
-General walkthrough
-**Secret Santa NOT White Elephant
-1. Pay to enter Main Secret Santa Smart contract
-    A) for this version, make it a humble secret santa...not everybody is rich!
-    B) 10 eth limit
-2. The floor price needs $20 USD (0.004803 Ether as of 11/30) - implement oracle? - Chainlink for Eth price?
-    A) https://data.chain.link/ethereum/mainnet/crypto-usd/eth-usd
-3. Important! When you enter a santa struct, ALL you need to enter and specify are the gift name, value of the gift at time of struct creation, link to the gift (limit to amazon) 
-    A) Right now, I want to not actually send the "gift" but the gift value!
-    B) The information provided (i.e. gift name....it creates a gift Struct)
-4. No limit to entrants to a group. 
-6. Within the santa Struct, include:
-    A) Gift Struct
-    B) Mapping with price range to Gift Struct
-    C) Mapping with address to Gift Struct
-        a) Only allow one address to enter one gift struct for now
-7. Gift struct:
-    A) Name of Gift
-    B) Value of Gift
-    C) Link of Gift
-8. Pseudorandomly assign gift to each person once timer expires
-    A) Make sure the person can't give gift to themselves
-    B) Distribute gift once timer ends
-9. Allow person to choose to either receive the gift or just keep the cash value
-10. You transfer ownership of giftStruct via Mapping
-    A) mapping(address => giftStruct);
-    
-    
 New Flow:
-1. Enter into contract by creating gift
-2. Others also enter contract by creating gift
-3. The previous entrant will give gift to new entrant
-4. Assign the new entrant the ownership of the gift struct
+1. Enter into contract by creating gift (done)
+2. Others also enter contract by creating gift (done)
+3. The previous entrant will give gift to new entrant (done)
+4. Assign the new entrant the ownership of the gift struct (done)
 5. When the timer expires, previous entrant sends eth value to new entrant
 6. the new entrant get's access (visually on webpage) to the gift and has the option to purchase with newly received eth!
     
@@ -52,15 +24,16 @@ contract SecretSanta {
     //who created the gift struct?
     mapping(address => giftStruct) public giftOriginatorMapping;
     //who owns the gift Struct
+    //make private later
     mapping(address => giftStruct) public giftOwnershipMapping;
     //gift giving mapping
     mapping(address => address) giftDestinationMapping;
     //mapping used to order entrants
     mapping(address => uint) rankMapping;
     //arrays
-    address[] public groupParticipantsArray;
+    address[] private groupParticipantsArray;
     //Guard
-    address public GUARD;
+    address private GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
     
@@ -150,14 +123,23 @@ contract SecretSanta {
         arbitraryCounter++;
     }
     
-   
+    //On Christmas day (or any arbitrary date), reveal to entrant the gift they received!
+    //have individual enter their address and return the gift Struct!
+    
+    function giftReveal(address _myAddress) public view returns(giftStruct memory){
+        require(msg.sender == _myAddress, "HEY! This isn't you. Don't make me give you coal...");
+        require(block.timestamp == endTime);
+        
+        return giftOwnershipMapping[_myAddress];
+        
+    }
+    
     
     //helper functions
     function getGroupParticipants() public view returns(address[] memory){
         return groupParticipantsArray;
         
     }
-    
     
     function _verifyIndex(address prevAddress, uint256 newValue, address nextAddress) 
         internal 
@@ -169,6 +151,7 @@ contract SecretSanta {
     }
 
     //returns the index of the value, which is an address
+    //adds new entrant to bottom of mapping
     function _findIndex(uint256 newValue) 
         internal 
         view 
@@ -188,8 +171,7 @@ contract SecretSanta {
     return giftDestinationMapping[_prevEntrant] == _address;
     }
   
-    function _findPrevEntrant(address _address) public view returns(address) {
-        
+    function _findPrevEntrant(address _address) internal view returns(address) {
         
         if (_address == GUARD){
             uint lastIndex = groupParticipantsArray.length - 1;
