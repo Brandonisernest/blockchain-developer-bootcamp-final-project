@@ -16,7 +16,25 @@ To Dos:
 
 pragma solidity 0.8.6;
 
-contract SecretSanta {
+interface EventsInterface {
+     struct giftStruct{
+        string giftName;
+        uint giftValue;
+        string giftUrl;
+    }
+    
+    event giftOriginated(address _giftOriginator, giftStruct _gift, address _giftRecipient);
+}
+
+interface SecretSantaInterface is EventsInterface{
+    function enterSecretSanta(string memory _giftName, string memory _giftUrl) external payable;
+    function giftReveal(address _myAddress) external view returns(giftStruct memory);
+    function getGroupParticipants() external view returns(address[] memory);
+    //no need to put internal interfaces 
+
+}
+
+contract SecretSanta is SecretSantaInterface{
     //owner of the contract. In case for permissioning
     address public santa;
     //when entrants are barred from entering and when gifts get distributed
@@ -37,11 +55,7 @@ contract SecretSanta {
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
     
-    struct giftStruct{
-        string giftName;
-        uint giftValue;
-        string giftUrl;
-    }
+  
     
     
     //constructor where first entrant (Santa) needs to particpate too
@@ -89,7 +103,7 @@ contract SecretSanta {
         _;
     }
     
-    function enterSecretSanta(string memory _giftName, string memory _giftUrl) public payable oneEntryOnly maxValue endTimeReached{
+    function enterSecretSanta(string memory _giftName, string memory _giftUrl) override public payable oneEntryOnly maxValue endTimeReached{
         require(msg.value > 0 ether, "You need more than zero to enter secret santa!");
       
         //front end will require just these inputs
@@ -119,6 +133,10 @@ contract SecretSanta {
         giftOwnershipMapping[msg.sender] = giftOriginatorMapping[prevEntrant];
         //give santa (first entrant) the gift of the last entrant
         giftOwnershipMapping[santa] = giftOriginatorMapping[lastEntrant];
+        
+        //emit 
+        emit giftOriginated(msg.sender, newGiftStruct, prevEntrant);
+        
         //increment counter
         arbitraryCounter++;
     }
@@ -126,7 +144,7 @@ contract SecretSanta {
     //On Christmas day (or any arbitrary date), reveal to entrant the gift they received!
     //have individual enter their address and return the gift Struct!
     
-    function giftReveal(address _myAddress) public view returns(giftStruct memory){
+    function giftReveal(address _myAddress) override public view returns(giftStruct memory){
         require(msg.sender == _myAddress, "HEY! This isn't you. Don't make me give you coal...");
         require(block.timestamp >= endTime, "HEY! It's not Christmas yet...be patient");
         
@@ -136,7 +154,7 @@ contract SecretSanta {
     
     
     //helper functions
-    function getGroupParticipants() public view returns(address[] memory){
+    function getGroupParticipants() override public view returns(address[] memory){
         return groupParticipantsArray;
         
     }
