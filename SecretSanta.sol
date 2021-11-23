@@ -47,8 +47,8 @@ contract SecretSanta {
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
         require(msg.value > 0 ether, "C'mon Santa...you gotta pay up too!");
-        //arbitrary endTime
-        endTime = block.timestamp * 2;
+        //arbitrary endTime (1 minute fore now)
+        endTime = block.timestamp + 60;
         
         //Deployer is the first entrant
         santa = msg.sender;
@@ -128,7 +128,7 @@ contract SecretSanta {
     
     function giftReveal(address _myAddress) public view returns(giftStruct memory){
         require(msg.sender == _myAddress, "HEY! This isn't you. Don't make me give you coal...");
-        require(block.timestamp == endTime);
+        require(block.timestamp >= endTime, "HEY! It's not Christmas yet...be patient");
         
         return giftOwnershipMapping[_myAddress];
         
