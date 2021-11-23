@@ -11,7 +11,7 @@ To Dos:
 1. Create events interface 
     A) When address enters the contract
 2. Create contract interface
-3. Allow new entrant to input usd and have the app convert usd to wei
+3. Allow new entrant to input ether in dAPP
     
 
 */
@@ -90,7 +90,7 @@ contract SecretSanta is SecretSantaInterface{
     }
     
     modifier maxValue() {
-        require(msg.value < 1 ether);
+        require(msg.value <= 1 ether);
         _;
     }
     
