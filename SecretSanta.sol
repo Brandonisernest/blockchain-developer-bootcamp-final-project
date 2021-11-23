@@ -52,7 +52,7 @@ contract SecretSanta {
     //who created the gift struct?
     mapping(address => giftStruct) public giftOriginatorMapping;
     //who owns the gift Struct
-    mapping(address => giftStruct) private giftOwnershipMapping;
+    mapping(address => giftStruct) public giftOwnershipMapping;
     //gift giving mapping
     mapping(address => address) giftDestinationMapping;
     //mapping used to order entrants
@@ -82,6 +82,7 @@ contract SecretSanta {
         //This ensures that a gift is always sent to an active address (assuming link list method)
         GUARD = santa;
         giftDestinationMapping[GUARD] = GUARD;
+        groupParticipantsArray.push(santa);
         
         //santa's gift struct
         giftStruct memory firstGiftStruct = giftStruct({
@@ -89,6 +90,9 @@ contract SecretSanta {
             giftValue : msg.value,
             giftUrl : _firstGiftUrl
         });
+        
+        giftOriginatorMapping[santa] = firstGiftStruct;
+        arbitraryCounter++;
     }
     
     modifier onlySanta() {
@@ -136,20 +140,18 @@ contract SecretSanta {
         giftDestinationMapping[index] = msg.sender;
         
         address prevEntrant = _findPrevEntrant(msg.sender);
+        //this wont work as it is. _findPrevEntrant will return address (0) if input is GUARD
+        address lastEntrant = _findPrevEntrant(GUARD);
+        //santa will get the last person's gift?
+        //NOT WORKING. TROUBLESHOOT.
+        giftOwnershipMapping[santa] = giftOriginatorMapping[lastEntrant];
         //the new entrant will own the last entrants gift.
         giftOwnershipMapping[msg.sender] = giftOriginatorMapping[prevEntrant];
         //increment counter
         arbitraryCounter++;
     }
     
-    //santa distributes gift one endTime has passed
-    // function distributeGifts() public payable onlySanta{
-    //     require(block.timestamp >= endTime);
-        
-    //     //All I need to do is reassign gift ownership
-        
-        
-    // }
+   
     
     //helper functions
     function getGroupParticipants() public view returns(address[] memory){
@@ -189,6 +191,7 @@ contract SecretSanta {
     }
     
     function _findPrevEntrant(address _address) internal view returns(address) {
+        
         address currentAddress = GUARD;
         while(giftDestinationMapping[currentAddress] != GUARD) {
             if(_isPrevStudent(_address, currentAddress))
