@@ -22,19 +22,47 @@ https://faucets.chain.link/
 https://ethdrop.dev/
 
 MM add: 0xb89A6890142B12aC79Ad27b481B8c3BfCBC711e5
+
+
+Chainlink returns USD * 10^8
 */
 
 pragma solidity 0.8.6;
 
 //importing chainlink
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+//-------------------
+//-------------------
+//-------------------
+// This example code is designed to quickly deploy an example contract using Remix.
+contract PriceConsumerV3 {
 
-contract EthPriceFeed{
     AggregatorV3Interface internal priceFeed;
+
+    /**
+     * Network: Kovan
+     * Aggregator: ETH/USD
+     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
+     */
+    constructor() public {
+        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+    }
+
+    /**
+     * Returns the latest price
+     */
+    // function getLatestPrice() public view returns (int) {
+    //     (
+    //         uint80 roundID, 
+    //         int price,
+    //         uint startedAt,
+    //         uint timeStamp,
+    //         uint80 answeredInRound
+    //     ) = priceFeed.latestRoundData();
+    //     return price;
+    // }
     
-    //0x9326BFA02ADD2366b30bacB125260Af641031331 is the ETH/USD price feed reference contract
-    priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
-    
+    //my version
     
     function getLatestPrice() public view returns (int) {
         (
@@ -48,6 +76,9 @@ contract EthPriceFeed{
     }
 }
 
+
+// 434110000000
+// 434100000000
 interface EventsInterface {
      struct giftStruct{
         string giftName;
@@ -86,9 +117,11 @@ contract SecretSanta is SecretSantaInterface{
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
+    //let's keep this secret santa modest. $20USD limit
+    //Times 10^7 to match up with chainlink price format
+    uint constant budgetCap = 20 * (10^7);
     
   
-    
     
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
@@ -128,7 +161,7 @@ contract SecretSanta is SecretSantaInterface{
     }
     
     modifier maxValue() {
-        require(msg.value < 10 ether, "Value is too high! This is a reasonable secret santa");
+        require(msg.value < budgetCap, "Value is too high! This is a reasonable secret santa");
         _;
     }
     
@@ -138,7 +171,7 @@ contract SecretSanta is SecretSantaInterface{
     }
     
     function enterSecretSanta(string memory _giftName, string memory _giftUrl) override public payable oneEntryOnly maxValue endTimeReached{
-        require(msg.value > 0 ether, "You need more than zero to enter secret santa!");
+        require(msg.value > 0 wei, "You need more than zero to enter secret santa!");
       
         //front end will require just these inputs
         giftStruct memory newGiftStruct = giftStruct({
