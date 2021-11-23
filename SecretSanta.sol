@@ -139,14 +139,15 @@ contract SecretSanta {
         giftDestinationMapping[msg.sender] = giftDestinationMapping[index];
         giftDestinationMapping[index] = msg.sender;
         
-        address prevEntrant = _findPrevEntrant(msg.sender);
-        //this wont work as it is. _findPrevEntrant will return address (0) if input is GUARD
+        // address prevEntrant = _findPrevEntrant(msg.sender);
+        address nextEntrant = _findNextEntrant(msg.sender);
         address lastEntrant = _findPrevEntrant(GUARD);
-        //santa will get the last person's gift?
-        //NOT WORKING. TROUBLESHOOT.
-        giftOwnershipMapping[santa] = giftOriginatorMapping[lastEntrant];
+        
+        //Since the linkList adds new entrants to the FRONT not the END of the linkedlist, I need to have prevEntrant point to msg.sender
+        giftOwnershipMapping[lastEntrant] = giftOriginatorMapping[santa];
         //the new entrant will own the last entrants gift.
-        giftOwnershipMapping[msg.sender] = giftOriginatorMapping[prevEntrant];
+        //Since the linkList adds new entrants to the FRONT not the END of the linkedlist, I need to have prevEntrant point to msg.sender
+        giftOwnershipMapping[nextEntrant] = giftOriginatorMapping[msg.sender];
         //increment counter
         arbitraryCounter++;
     }
@@ -185,16 +186,35 @@ contract SecretSanta {
 
         }
         
-    function _isPrevStudent(address _address, address _prevEntrant) internal view returns(bool) {
+    function _isPrevEntrant(address _address, address _prevEntrant) internal view returns(bool) {
     return giftDestinationMapping[_prevEntrant] == _address;
-        
     }
     
-    function _findPrevEntrant(address _address) internal view returns(address) {
+    function _isNextEntrant(address _address, address _nextEntrant) internal view returns(bool) {
+    return giftDestinationMapping[_address] == _nextEntrant;
+    }
+    
+    function _findPrevEntrant(address _address) public view returns(address) {
+        
+        
+        if (_address == GUARD){
+            uint lastIndex = groupParticipantsArray.length - 1;
+            return groupParticipantsArray[lastIndex];
+        }
+        address currentAddress = GUARD;
+        while(giftDestinationMapping[currentAddress] != GUARD) {
+            if(_isPrevEntrant(_address, currentAddress))
+                return currentAddress;
+            currentAddress = giftDestinationMapping[currentAddress];
+        }
+        return address(0);
+    }
+    
+    function _findNextEntrant(address _address) public view returns(address) {
         
         address currentAddress = GUARD;
         while(giftDestinationMapping[currentAddress] != GUARD) {
-            if(_isPrevStudent(_address, currentAddress))
+            if(_isNextEntrant(_address, currentAddress))
                 return currentAddress;
             currentAddress = giftDestinationMapping[currentAddress];
         }
