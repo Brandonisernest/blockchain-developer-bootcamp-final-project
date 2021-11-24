@@ -25,60 +25,23 @@ https://faucets.chain.link/
 https://ethdrop.dev/
 MM add: 0xb89A6890142B12aC79Ad27b481B8c3BfCBC711e5
 Chainlink returns USD * 10^8
+
+
+Chainlink update
+////THIS FUNCTION CALL IS ASYNC!!!
+///THAT'S WHY MY CODE DIDN'T WORK.....
+////IN JS, YOU CAN DEAL WITH ASYNC DATA WITH ASYNC AWAITS
+////BUT IN SOLIDITY, I NEED TO GET MORE CREATIVE. I WILL RUN A FUNCTION THAT STORES PRICE INTO A STATE VARIABLE
+///I CAN CALL AGAIN IN FUTURE TO UPDATE, BUT AT LEAST I WILL HAVE SOME VALUE
 */
 
 pragma solidity 0.8.6;
 
 //importing chainlink
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-//-------------------
-//-------------------
-//-------------------
-// This example code is designed to quickly deploy an example contract using Remix.
-contract PriceConsumerV3 {
-
-    AggregatorV3Interface internal priceFeed;
-
-    /**
-     * Network: Kovan
-     * Aggregator: ETH/USD
-     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
-     */
-    constructor() public {
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
-    }
-
-    /**
-     * Returns the latest price
-     */
-    // function getLatestPrice() public view returns (int) {
-    //     (
-    //         uint80 roundID, 
-    //         int price,
-    //         uint startedAt,
-    //         uint timeStamp,
-    //         uint80 answeredInRound
-    //     ) = priceFeed.latestRoundData();
-    //     return price;
-    // }
-    
-    //my version
-    
-    function getLatestPrice() public view returns (int) {
-        (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
-        return price;
-    }
-}
-
 
 // 434110000000
-// 434100000000
+
 interface EventsInterface {
      struct giftStruct{
         string giftName;
@@ -97,8 +60,8 @@ interface SecretSantaInterface is EventsInterface{
 
 }
 
-contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
-    // contract SecretSanta is SecretSantaInterface{
+contract SecretSanta is SecretSantaInterface{
+    
     //owner of the contract. In case for permissioning
     address public santa;
     //when entrants are barred from entering and when gifts get distributed
@@ -118,18 +81,26 @@ contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
+    
+    
+    //chainlink stuff
+    
+    AggregatorV3Interface internal priceFeed;
     //let's keep this secret santa modest. $20USD limit
     //Times 10^7 to match up with chainlink price format
-    int public latestEthUSD = getLatestPrice();
+    int public latestEthUSD;
     //convert eth to wei
-    // int weiAmt = 10**18;
+    int weiAmt = 10**18;
     //budget cap in wei ($20 in eth)
     //convert to uint so I can compare with msg.valuce
     uint public budgetCapUSD =  (20 * (10 ** 8)) / uint(latestEthUSD);
+    // uint public budgetCapUSD = 1;
+
+    
     
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
-        require(msg.value > 0 ether, "C'mon Santa...you gotta pay up too!");
+        require(msg.value > 0 wei, "C'mon Santa...you gotta pay up too!");
         //arbitrary endTime (1 minute fore now)
         endTime = block.timestamp + 60;
         
@@ -149,7 +120,36 @@ contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
         
         giftOriginatorMapping[santa] = firstGiftStruct;
         arbitraryCounter++;
+        
+        //get chainlink price feed
+        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+        
+        //chainlink pricefeed
+        //initialize value?
+     
+            (
+                uint80 roundID, 
+                int price,
+                uint startedAt,
+                uint timeStamp,
+                uint80 answeredInRound
+            ) = priceFeed.latestRoundData();
+            latestEthUSD = price;
+        
     }
+    
+     //chainlink pricefeed
+    function getLatestPrice() public {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        latestEthUSD = price;
+    }
+    
     
     
     modifier oneEntryOnly() {
@@ -268,5 +268,7 @@ contract SecretSanta is SecretSantaInterface, PriceConsumerV3{
         }
         return address(0);
     }
+    
+   
   
 }
