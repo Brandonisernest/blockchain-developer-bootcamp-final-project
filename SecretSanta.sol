@@ -1,4 +1,12 @@
 /*
+
+-----
+THIS VERSION WILL NOT USE ORACLES. 
+I HAD DIFFICULTY PERFORMING UNIT TESTS WITH ORACLES GIVEN THE ASYNC NATURE
+THIS VERSION WILL ONLY REQUIRE 1 WEI ENTRY 
+-----
+
+
 New Flow:
 1. Enter into contract by creating gift (done)
 2. Others also enter contract by creating gift (done)
@@ -6,17 +14,20 @@ New Flow:
 4. Assign the new entrant the ownership of the gift struct (done)
 5. When the timer expires, previous entrant sends eth value to new entrant
 6. the new entrant get's access (visually on webpage) to the gift and has the option to purchase with newly received eth!
-    
-To Dos:
-1. Create events interface 
-    A) When address enters the contract
-2. Create contract interface
-3. Allow new entrant to input ether in dAPP
-    
 
+Two design patterns:
+1. interface and inheretance
+2. Oracles
+3. External function alls
+
+Attack Vectors: Go through this more carefully
+1. not using specific pragma
+2. Use modifiers only for validation (whats this?)
+    
 */
 
-pragma solidity 0.8.6;
+pragma solidity ^0.8.6;
+
 
 interface EventsInterface {
      struct giftStruct{
@@ -37,6 +48,7 @@ interface SecretSantaInterface is EventsInterface{
 }
 
 contract SecretSanta is SecretSantaInterface{
+    
     //owner of the contract. In case for permissioning
     address public santa;
     //when entrants are barred from entering and when gifts get distributed
@@ -55,12 +67,12 @@ contract SecretSanta is SecretSantaInterface{
     //Guard
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
-    uint arbitraryCounter = 0;
-
+    uint arbitraryCounter = 0;    
+    //uint tenUsdInWei = 10 * 1 wei;
     
     //constructor where first entrant (Santa) needs to particpate too
-    constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
-        require(msg.value > 0 ether, "C'mon Santa...you gotta pay up too!");
+    constructor(string memory _firstGiftName, string memory _firstGiftUrl) payable {
+        require(msg.value >= 1 wei, "C'mon Santa...you gotta pay up too!");
         //arbitrary endTime (1 minute fore now)
         endTime = block.timestamp + 60;
         
@@ -81,16 +93,26 @@ contract SecretSanta is SecretSantaInterface{
         giftOriginatorMapping[santa] = firstGiftStruct;
         arbitraryCounter++;
     }
+
+    modifier onlySanta() {
+        require(msg.sender == santa, "Only Santa can call this!");
+        _;
+    }
     
     
     modifier oneEntryOnly() {
-        //hacky way to ensure user is not already in contract. Maybe think of something el;se
+        //hacky way to ensure user is not already in contract. Maybe think of something else
         require(giftOriginatorMapping[msg.sender].giftValue == 0, "Already in secret santa!");
         _;
     }
     
+    modifier minValue() {
+        //10usd minimum
+        require(msg.value >= 1 wei, "10USD minimum");
+        _; 
+    }
     modifier maxValue() {
-        require(msg.value <= 1 ether);
+        require(msg.value <= 1 ether, "Value is too high! This is a reasonable secret santa");
         _;
     }
     
@@ -99,7 +121,14 @@ contract SecretSanta is SecretSantaInterface{
         _;
     }
     
-    function enterSecretSanta(string memory _giftName, string memory _giftUrl) override public payable oneEntryOnly maxValue endTimeReached{
+    function enterSecretSanta(string memory _giftName, string memory _giftUrl) 
+    override 
+    public 
+    payable 
+    oneEntryOnly
+    minValue 
+    maxValue 
+    endTimeReached{
         require(msg.value > 0 wei, "You need more than zero to enter secret santa!");
       
         //front end will require just these inputs
@@ -178,11 +207,10 @@ contract SecretSanta is SecretSantaInterface{
                 }
                 candidateAddress = giftDestinationMapping[candidateAddress];
             }
-
-        }
+    }
         
     function _isPrevEntrant(address _address, address _prevEntrant) internal view returns(bool) {
-    return giftDestinationMapping[_prevEntrant] == _address;
+        return giftDestinationMapping[_prevEntrant] == _address;
     }
   
     function _findPrevEntrant(address _address) internal view returns(address) {
@@ -199,5 +227,7 @@ contract SecretSanta is SecretSantaInterface{
         }
         return address(0);
     }
+    
+
   
 }
