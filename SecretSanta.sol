@@ -281,11 +281,10 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
                 }
                 candidateAddress = giftDestinationMapping[candidateAddress];
             }
-
-        }
+    }
         
     function _isPrevEntrant(address _address, address _prevEntrant) internal view returns(bool) {
-    return giftDestinationMapping[_prevEntrant] == _address;
+        return giftDestinationMapping[_prevEntrant] == _address;
     }
   
     function _findPrevEntrant(address _address) internal view returns(address) {
