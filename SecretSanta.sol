@@ -33,14 +33,66 @@ Chainlink update
 ////IN JS, YOU CAN DEAL WITH ASYNC DATA WITH ASYNC AWAITS
 ////BUT IN SOLIDITY, I NEED TO GET MORE CREATIVE. I WILL RUN A FUNCTION THAT STORES PRICE INTO A STATE VARIABLE
 ///I CAN CALL AGAIN IN FUTURE TO UPDATE, BUT AT LEAST I WILL HAVE SOME VALUE
+
+
+
+To Do:
+1. Work on budgetCapUSD variable. This async thing is resulting in the variable being set to zero...
 */
 
 pragma solidity 0.8.6;
 
-//importing chainlink
+// 434110000000
+
+// SPDX-License-Identifier: MIT
+
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-// 434110000000
+//this will be my chainlink data (base) contract
+// any security risks?
+contract priceConsumerVSanta{
+// contract PriceConsumerV3 {
+
+    AggregatorV3Interface internal priceFeed;
+    int public latestEthUSD;
+    // uint public budgetCapUSD;
+
+    /**
+     * Network: Kovan
+     * Aggregator: ETH/USD
+     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
+     */
+    constructor() {
+        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
+        
+         (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        latestEthUSD = price;
+        
+        // budgetCapUSD = 1;
+        
+    }
+
+    /**
+     * Returns the latest price
+     */
+    function getLatestPrice() external {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        latestEthUSD = price;
+    }
+    
+}
 
 interface EventsInterface {
      struct giftStruct{
@@ -60,7 +112,8 @@ interface SecretSantaInterface is EventsInterface{
 
 }
 
-contract SecretSanta is SecretSantaInterface{
+contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
+    
     
     //owner of the contract. In case for permissioning
     address public santa;
@@ -84,17 +137,15 @@ contract SecretSanta is SecretSantaInterface{
     
     
     //chainlink stuff
-    
-    AggregatorV3Interface internal priceFeed;
     //let's keep this secret santa modest. $20USD limit
     //Times 10^7 to match up with chainlink price format
-    int public latestEthUSD;
+    //To deal with async data in solidity, I need to have the async data stored in state of the contract im calling ***VERY IMPORTANT
+    // int public latestEthUSD = ethPrice;
     //convert eth to wei
     int weiAmt = 10**18;
     //budget cap in wei ($20 in eth)
     //convert to uint so I can compare with msg.valuce
-    uint public budgetCapUSD =  (20 * (10 ** 8)) / uint(latestEthUSD);
-    // uint public budgetCapUSD = 1;
+    uint public budgetCapUSD;
 
     
     
@@ -121,34 +172,22 @@ contract SecretSanta is SecretSantaInterface{
         giftOriginatorMapping[santa] = firstGiftStruct;
         arbitraryCounter++;
         
-        //get chainlink price feed
-        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);
-        
-        //chainlink pricefeed
-        //initialize value?
-     
-            (
-                uint80 roundID, 
-                int price,
-                uint startedAt,
-                uint timeStamp,
-                uint80 answeredInRound
-            ) = priceFeed.latestRoundData();
-            latestEthUSD = price;
-        
+        //set initial value of ethPrice from chainLink contract 
+        // budgetCapUSD = 20 * (10 ** 8) / uint(latestEthUSD);
+
     }
     
      //chainlink pricefeed
-    function getLatestPrice() public {
-        (
-            uint80 roundID, 
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
-        latestEthUSD = price;
-    }
+    // function getLatestPrice() public {
+    //     (
+    //         uint80 roundID, 
+    //         int price,
+    //         uint startedAt,
+    //         uint timeStamp,
+    //         uint80 answeredInRound
+    //     ) = chainLink.priceFeed.latestRoundData();
+    //     latestEthUSD = price;
+    // }
     
     
     
@@ -269,6 +308,9 @@ contract SecretSanta is SecretSantaInterface{
         return address(0);
     }
     
+    // function getBudgetCap() public {
+    //     budgetCapUSD = 20 * (10 ** 8) / uint(latestEthUSD);
+    // }
    
   
 }
