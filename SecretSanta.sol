@@ -142,10 +142,11 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;    
+    uint tenUsdInWei = 10 * usdInWei;
     
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
-        require(msg.value > 0 wei, "C'mon Santa...you gotta pay up too!");
+        require(msg.value >= tenUsdInWei, "C'mon Santa...you gotta pay up too!");
         //arbitrary endTime (1 minute fore now)
         endTime = block.timestamp + 60;
         
@@ -181,7 +182,7 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
     
     modifier minValue() {
         //10usd minimum
-        require(msg.value > (10 * usdInWei), "10USD minimum");
+        require(msg.value >= tenUsdInWei, "10USD minimum");
         _; 
     }
     modifier maxValue() {
