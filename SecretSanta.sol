@@ -38,7 +38,6 @@ Gotcha notes on Chainlink:
 pragma solidity 0.8.6;
 
 // 434110000000
-
 // SPDX-License-Identifier: MIT
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -48,15 +47,12 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract priceConsumerVSanta{
 // contract PriceConsumerV3 {
 
-    event budgetCapEvent(uint _budgetCap);
-
     AggregatorV3Interface internal priceFeed;
     uint constant weiAmt = 10**18;
     int public latestEthUSD;
     uint public budgetCapUSD;
     uint public usdInWei;
     uint constant public twentyUSD = 20;
-    
 
 
     /**
@@ -78,8 +74,9 @@ contract priceConsumerVSanta{
 
         //convert 1 usd into wei to make division possible (not fraction)
         usdInWei = (weiAmt * (10**8)) / uint(latestEthUSD);
+
         //convert 20usd to wei
-        budgetCapUSD = twentyUSD * usdInWei;
+        budgetCapUSD = (twentyUSD * usdInWei) * 1 wei;
     }
 
     /**
@@ -142,7 +139,7 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;    
-    uint tenUsdInWei = 10 * usdInWei;
+    uint tenUsdInWei = 10 * 1 wei;
     
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
