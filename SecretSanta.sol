@@ -141,21 +141,7 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
     //Guard
     address private GUARD;
     //arbitrary counter for giftDestinationMapping
-    uint arbitraryCounter = 0;
-    
-    
-    //chainlink stuff
-    //let's keep this secret santa modest. $20USD limit
-    //Times 10^7 to match up with chainlink price format
-    //To deal with async data in solidity, I need to have the async data stored in state of the contract im calling ***VERY IMPORTANT
-    // int public latestEthUSD = ethPrice;
-    //convert eth to wei
-    //int weiAmt = 10**18;
-    //budget cap in wei ($20 in eth)
-    //convert to uint so I can compare with msg.valuce
-    //uint public budgetCapUSD;
-
-    
+    uint arbitraryCounter = 0;    
     
     //constructor where first entrant (Santa) needs to particpate too
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) public payable {
@@ -179,24 +165,12 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
         
         giftOriginatorMapping[santa] = firstGiftStruct;
         arbitraryCounter++;
-        
-        //set initial value of ethPrice from chainLink contract 
-        // budgetCapUSD = 20 * (10 ** 8) / uint(latestEthUSD);
-
     }
-    
-     //chainlink pricefeed
-    // function getLatestPrice() public {
-    //     (
-    //         uint80 roundID, 
-    //         int price,
-    //         uint startedAt,
-    //         uint timeStamp,
-    //         uint80 answeredInRound
-    //     ) = chainLink.priceFeed.latestRoundData();
-    //     latestEthUSD = price;
-    // }
-    
+
+    modifier onlySanta() {
+        require(msg.sender == santa, "Only Santa can call this!");
+        _;
+    }
     
     
     modifier oneEntryOnly() {
@@ -205,6 +179,11 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
         _;
     }
     
+    modifier minValue() {
+        //10usd minimum
+        require(msg.value > (10 * usdInWei), "10USD minimum");
+        _; 
+    }
     modifier maxValue() {
         require(msg.value <= budgetCapUSD, "Value is too high! This is a reasonable secret santa");
         _;
@@ -215,7 +194,14 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
         _;
     }
     
-    function enterSecretSanta(string memory _giftName, string memory _giftUrl) override public payable oneEntryOnly maxValue endTimeReached{
+    function enterSecretSanta(string memory _giftName, string memory _giftUrl) 
+    override 
+    public 
+    payable 
+    oneEntryOnly
+    minValue 
+    maxValue 
+    endTimeReached{
         require(msg.value > 0 wei, "You need more than zero to enter secret santa!");
       
         //front end will require just these inputs
@@ -316,9 +302,13 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
         return address(0);
     }
     
-    // function getBudgetCap() public {
-    //     budgetCapUSD = 20 * (10 ** 8) / uint(latestEthUSD);
-    // }
+    //external functions
+    //priceConsumerVSanta address: 0x2d949Bed8Ecdf807A1366aaa7CF707665B0f08Aa
+    //^^This changes each time contract is redeployed in remix
+    //In mainnet (or testnet), you can use the permanetly deployed contract
+    function getUpdatedEthPrice(priceConsumerVSanta _contractAddress) public onlySanta{
+        _contractAddress.getLatestPrice();
+    }
    
   
 }
