@@ -108,7 +108,7 @@ contract SecretSanta is SecretSantaInterface{
     
     modifier minValue() {
         //10usd minimum
-        require(msg.value >= 1 wei, "10USD minimum");
+        require(msg.value >= 1 wei, "1 Wei minimum");
         _; 
     }
     modifier maxValue() {
