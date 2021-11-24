@@ -10,6 +10,7 @@ New Flow:
 Two design patterns:
 1. interface and inheretance
 2. Oracles
+3. External function alls
     
 To Dos:
 1. Create events interface 
@@ -26,18 +27,12 @@ https://ethdrop.dev/
 MM add: 0xb89A6890142B12aC79Ad27b481B8c3BfCBC711e5
 Chainlink returns USD * 10^8
 
+Gotcha notes on Chainlink:
+1. I need to initialize chainlink data in constructor because it is asyncrhonous
+2. I can calculate budgetCapUSD, but I need to make sure the division does not result in fraction/decimals
+    A) Solidity cannot handle that. 
+    B) Therefore, I convert the USD into wei first before multiplying by 20USD
 
-Chainlink update
-////THIS FUNCTION CALL IS ASYNC!!!
-///THAT'S WHY MY CODE DIDN'T WORK.....
-////IN JS, YOU CAN DEAL WITH ASYNC DATA WITH ASYNC AWAITS
-////BUT IN SOLIDITY, I NEED TO GET MORE CREATIVE. I WILL RUN A FUNCTION THAT STORES PRICE INTO A STATE VARIABLE
-///I CAN CALL AGAIN IN FUTURE TO UPDATE, BUT AT LEAST I WILL HAVE SOME VALUE
-
-
-
-To Do:
-1. Work on budgetCapUSD variable. This async thing is resulting in the variable being set to zero...
 */
 
 pragma solidity 0.8.6;
@@ -53,9 +48,16 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract priceConsumerVSanta{
 // contract PriceConsumerV3 {
 
+    event budgetCapEvent(uint _budgetCap);
+
     AggregatorV3Interface internal priceFeed;
+    uint constant weiAmt = 10**18;
     int public latestEthUSD;
-    // uint public budgetCapUSD;
+    uint public budgetCapUSD;
+    uint public usdInWei;
+    uint constant public twentyUSD = 20;
+    
+
 
     /**
      * Network: Kovan
@@ -73,9 +75,11 @@ contract priceConsumerVSanta{
             uint80 answeredInRound
         ) = priceFeed.latestRoundData();
         latestEthUSD = price;
-        
-        // budgetCapUSD = 1;
-        
+
+        //convert 1 usd into wei to make division possible (not fraction)
+        usdInWei = (weiAmt * (10**8)) / uint(latestEthUSD);
+        //convert 20usd to wei
+        budgetCapUSD = twentyUSD * usdInWei;
     }
 
     /**
@@ -92,6 +96,10 @@ contract priceConsumerVSanta{
         latestEthUSD = price;
     }
     
+    //helper function
+    function budgetEvaluator() private view returns(bool) {
+        return(budgetCapUSD == 0);
+    }
 }
 
 interface EventsInterface {
@@ -142,10 +150,10 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
     //To deal with async data in solidity, I need to have the async data stored in state of the contract im calling ***VERY IMPORTANT
     // int public latestEthUSD = ethPrice;
     //convert eth to wei
-    int weiAmt = 10**18;
+    //int weiAmt = 10**18;
     //budget cap in wei ($20 in eth)
     //convert to uint so I can compare with msg.valuce
-    uint public budgetCapUSD;
+    //uint public budgetCapUSD;
 
     
     
@@ -192,7 +200,7 @@ contract SecretSanta is SecretSantaInterface, priceConsumerVSanta{
     
     
     modifier oneEntryOnly() {
-        //hacky way to ensure user is not already in contract. Maybe think of something el;se
+        //hacky way to ensure user is not already in contract. Maybe think of something else
         require(giftOriginatorMapping[msg.sender].giftValue == 0, "Already in secret santa!");
         _;
     }
