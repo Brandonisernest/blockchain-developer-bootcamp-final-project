@@ -25,6 +25,14 @@ Here's how it works: A new particpant becomes eligible to receive a gift AFTER t
 
 *(Disclaimer: In the REAL version, you won't be able to see your gift until Christmas time. Trust me, It'll work! Also, the gift limit will be $20 USD, and not the 1 Eth in the final project version thanks to help from oracles.)*
 
+## Simple Workflow
+1. Enter website
+2. Login with MetaMask
+3. Fill out the 3 input fields (the value field needs to be between 1 wei and 1 eth)
+4. Submit
+5. If submission is successful, press the gift reveal to see what gift you recevied from your SECRET SANTA! HOHOHO!
+
+
 # blockchain-developer-bootcamp-final-project
 
 * Describe the project
