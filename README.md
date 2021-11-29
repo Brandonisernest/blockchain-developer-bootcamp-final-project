@@ -16,8 +16,10 @@ https://final-proj-con-brando.netlify.app/
 * Open http://localhost:8080
 
 ## Screencast link
+https://www.loom.com/share/7335c07f5b8943149141104650b5ee93
 
 ## Public ethereum address for certification
+* Can I provide at a later date?
 
 ## Project Description
 Hohoho! It's that time again! Tis the season for getting, but more importantly, GIVING! We know saying: "It's the heart that counts" and now you have a chance to put that into action! Give a cool gift "secretly" with this dAPP!
@@ -38,17 +40,3 @@ Here's how it works: A new particpant becomes eligible to receive a gift AFTER t
 * tut/contracts: Smart contracts deployed on the Rinkeby network
 * tut/migrations: Migration files for deploying contracts in contracts directory
 * tut/test: Tests for smart contracts.
-
-# blockchain-developer-bootcamp-final-project
-
-* Describe the project
-* Describe directory structure
-* Where can the front end be accessed?
-
-
-# To dos:
-* Add comments in contract code based on this: https://docs.soliditylang.org/en/latest/natspec-format.html
-* Use 2 design patterns specified here. https://docs.google.com/document/d/1tthsXLlv5BDXEGUfoP6_MAsL_8_T0sRBNQs_1OnPxak/edit
-* Protect against 2 attack vectors
-* Have 5 unit tests
-* A screencast of me walking through project
