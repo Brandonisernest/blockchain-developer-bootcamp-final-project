@@ -2,6 +2,7 @@
 https://final-proj-con-brando.netlify.app/
 
 ## How to run locally
+### Prerequisites
 * Node JS >= v14.17.6
 * Truffle and Ganache
 
