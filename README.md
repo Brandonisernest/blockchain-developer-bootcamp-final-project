@@ -32,6 +32,11 @@ Here's how it works: A new particpant becomes eligible to receive a gift AFTER t
 4. Submit
 5. If submission is successful, press the gift reveal to see what gift you recevied from your SECRET SANTA! HOHOHO!
 
+## Directory Structure
+* FrontEnd: Project's front end
+* tut/contracts: Smart contracts deployed on the Rinkeby network
+* tut/migrations: Migration files for deploying contracts in contracts directory
+* tut/test: Tests for smart contracts.
 
 # blockchain-developer-bootcamp-final-project
 
