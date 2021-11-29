@@ -180,7 +180,7 @@ contract SecretSanta is SecretSantaInterface{
     /// @notice The following functions are helper functions
     
     /// @notice get array of all participating addresses
-    function getGroupParticipants() internal view returns(address[] memory){
+    function getGroupParticipants() public view returns(address[] memory){
         return groupParticipantsArray;
         
     }
@@ -189,7 +189,7 @@ contract SecretSanta is SecretSantaInterface{
     /// @param _address Address you want to check
     /// @dev Mainly for unit testing purposes
     /// @dev Originally checks .giftName, but changed for unit testing. Can be flexible
-    function getGiftName(address _address) internal view returns(uint){
+    function getGiftName(address _address) public view returns(uint){
         return giftOwnershipMapping[_address].giftValue;
 
     }
