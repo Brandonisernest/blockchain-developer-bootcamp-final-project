@@ -34,8 +34,6 @@ interface SecretSantaInterface is EventsInterface{
     function enterSecretSanta(string memory _giftName, string memory _giftUrl) external payable;
     function giftTransfer(address _myAddress) external payable;
     function giftReveal(address _myAddress) external view returns(giftStruct memory);
-    function getGroupParticipants() external view returns(address[] memory);
-    function getGiftName(address _address) external view returns(uint);
 
 }
 
@@ -51,14 +49,14 @@ contract SecretSanta is SecretSantaInterface{
 
     /// @notice Time when entrants are barred from entering and when gifts get distributed
     /// @dev For final proj version, this is not used so we can demonstrate full functionality
-    uint public endTime;
+    uint private endTime;
 
     /// @notice Mapping that shows who created the gift struct
-    mapping(address => giftStruct) public giftOriginatorMapping;
+    mapping(address => giftStruct) private giftOriginatorMapping;
 
     /// @notice Mapping that shows who currently owns a particular gift Struct
     /// @dev This is used to "assign" gift recipients
-    mapping(address => giftStruct) public giftOwnershipMapping;
+    mapping(address => giftStruct) private giftOwnershipMapping;
 
     /// @notice Linked list mapping that points last entrant to newest entrant
     /// @dev This is used to create a closed loop to pass gifts around
@@ -80,7 +78,7 @@ contract SecretSanta is SecretSantaInterface{
 
     /// @notice Security mapping for cause-effect interaction
     /// @dev Used to protect against re-entrancy
-    mapping(address => bool) public giftRevealMapping;  
+    mapping(address => bool) private giftRevealMapping;  
     
     /// @notice constructor where first entrant (Santa) needs to particpate too
     /// @notice All participants, even Santa, needs to pay minimum
@@ -182,7 +180,7 @@ contract SecretSanta is SecretSantaInterface{
     /// @notice The following functions are helper functions
     
     /// @notice get array of all participating addresses
-    function getGroupParticipants() override public view returns(address[] memory){
+    function getGroupParticipants() internal view returns(address[] memory){
         return groupParticipantsArray;
         
     }
@@ -191,7 +189,7 @@ contract SecretSanta is SecretSantaInterface{
     /// @param _address Address you want to check
     /// @dev Mainly for unit testing purposes
     /// @dev Originally checks .giftName, but changed for unit testing. Can be flexible
-    function getGiftName(address _address) override public view returns(uint){
+    function getGiftName(address _address) internal view returns(uint){
         return giftOwnershipMapping[_address].giftValue;
 
     }
@@ -252,13 +250,13 @@ contract SecretSanta is SecretSantaInterface{
 
     /// @notice Check total balance of contract
     /// @dev Only santa can check on the balance
-    function checkContractBalance() public view onlySanta returns(uint){
+    function checkContractBalance() internal view onlySanta returns(uint){
         return address(this).balance;
     }
 
     /// @notice Get endTime for uint testing purposes
     /// @dev Used mainly to see if entTime can get passed from contract to JS
-    function getEndTime() public view returns(uint){
+    function getEndTime() internal view returns(uint){
         return endTime;
     }
     
