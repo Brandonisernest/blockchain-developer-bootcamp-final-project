@@ -14,6 +14,14 @@ https://final-proj-con-brando.netlify.app/
 * Go to "FrontEnd" directory (cd FrontEnd in terminal)
 * Open http://localhost:8080
 
+## Screencast link
+
+## Public ethereum address for certification
+
+## Project Description
+Hohoho! It's that time again! Tis the season for getting, but more importantly, GIVING! We know saying: "It's the heart that counts" and now you have a chance to put that into action! Give a cool gift "secretly" with this dAPP!
+
+
 # blockchain-developer-bootcamp-final-project
 
 * Describe the project
