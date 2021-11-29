@@ -187,7 +187,7 @@ contract SecretSanta is SecretSantaInterface{
     }
 
     /// @notice Get just the value of the gift you will receive
-    /// @param _adddress Address you want to check
+    /// @param _address Address you want to check
     /// @dev Mainly for unit testing purposes
     /// @dev Originally checks .giftName, but changed for unit testing. Can be flexible
     function getGiftName(address _address) override public view returns(uint){
