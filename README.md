@@ -1,6 +1,10 @@
 ## Deployed Live Site URL
 https://final-proj-con-brando.netlify.app/
 
+## How to run locally
+* Node JS >= v14.17.6
+* Truffle and Ganache
+
 # blockchain-developer-bootcamp-final-project
 
 * Describe the project
