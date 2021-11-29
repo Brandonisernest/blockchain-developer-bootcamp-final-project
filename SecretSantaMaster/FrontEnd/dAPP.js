@@ -23,7 +23,7 @@ mmEnable.onclick = async() => {
     const mmCurrentAccount = document.getElementById("mm-current-account");
 	console.log(mmCurrentAccount);
 
-    mmCurrentAccount.innerHTML = "Here's your current account" + ethereum.selectedAddress;
+    mmCurrentAccount.innerHTML = "Here's your current account: " + ethereum.selectedAddress;
 }
 
 
