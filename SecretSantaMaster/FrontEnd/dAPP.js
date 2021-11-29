@@ -1,17 +1,3 @@
-//Pro tip...inspect page -> network -> disable cache
-//^^ This allows page to properly reflect changes made to js
-
-/*
-Instructions for final version webcast
-1) Remove the need for "end time". 
-2) Explain that the actually dAPP would be deployed for a Christmas "endtime". 
-    - After the demo, I will set to Christmas
-3) Deploy in remix (copy that contract address and ABI of santa contract). MUST BE INJECTED WEB3
-	- Regularly remix deployment is limited to a private instance and cannot be accessed by MM addresses
-4) You need an instance of web3 (I used this:  "https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js")
-
-*/
-
 //detected MM
 //The VERY first thing we want in our dAPP is to see if we are connected to a web3 provider
 //in our case, we are using MM
@@ -42,10 +28,28 @@ mmEnable.onclick = async() => {
 
 
 //remix contract address deployed on rinkeby
-const ssAddress = "0x194954ecF4cE2c79B9448378879Db544eb8053cA";
+const ssAddress = "0x306bF3a967657D0AFF222C7886054D585Be84633";
 
 //get the ABI from remix
 const ssABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_giftName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_giftUrl",
+				"type": "string"
+			}
+		],
+		"name": "enterSecretSanta",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
 	{
 		"inputs": [
 			{
@@ -127,7 +131,7 @@ const ssABI = [
 				],
 				"indexed": false,
 				"internalType": "struct EventsInterface.giftStruct",
-				"name": "",
+				"name": "_gift",
 				"type": "tuple"
 			}
 		],
@@ -135,60 +139,16 @@ const ssABI = [
 		"type": "event"
 	},
 	{
-		"inputs": [],
-		"name": "checkContractBalance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "endTime",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_giftName",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_giftUrl",
-				"type": "string"
+				"internalType": "address",
+				"name": "_myAddress",
+				"type": "address"
 			}
 		],
-		"name": "enterSecretSanta",
+		"name": "giftTransfer",
 		"outputs": [],
 		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getEndTime",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -218,64 +178,6 @@ const ssABI = [
 				"internalType": "address[]",
 				"name": "",
 				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "giftOriginatorMapping",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "giftName",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "giftValue",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "giftUrl",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "giftOwnershipMapping",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "giftName",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "giftValue",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "giftUrl",
-				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -318,38 +220,6 @@ const ssABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "giftRevealMapping",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_myAddress",
-				"type": "address"
-			}
-		],
-		"name": "giftTransfer",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "santa",
 		"outputs": [
@@ -363,7 +233,6 @@ const ssABI = [
 		"type": "function"
 	}
 ]
-
 
 ////
 ////
