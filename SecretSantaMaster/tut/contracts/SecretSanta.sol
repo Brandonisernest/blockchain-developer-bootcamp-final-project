@@ -178,20 +178,27 @@ contract SecretSanta is SecretSantaInterface{
     }
     
 
-    /// @notice The following are helper functions
+    /// @notice The following functions are helper functions
     
-    ///
+    /// @notice get array of all participating addresses
     function getGroupParticipants() override public view returns(address[] memory){
         return groupParticipantsArray;
         
     }
 
-    //mainly for testing purposes
+    /// @notice Get just the value of the gift you will receive
+    /// @param _adddress Address you want to check
+    /// @dev Mainly for unit testing purposes
+    /// @dev Originally checks .giftName, but changed for unit testing. Can be flexible
     function getGiftName(address _address) override public view returns(uint){
         return giftOwnershipMapping[_address].giftValue;
 
     }
     
+    /// @notice Checks if incoming value belongs between 2 existing, ranked values
+    /// @param prevAddress previous address of linked list
+    /// @param newValue arbitraryCounter value assigned to each new gift
+    /// @param nextAddress nextAddress on the linked list
     function _verifyIndex(address prevAddress, uint256 newValue, address nextAddress) 
         internal 
         view 
@@ -201,8 +208,9 @@ contract SecretSanta is SecretSantaInterface{
 
     }
 
-    //returns the index of the value, which is an address
-    //adds new entrant to bottom of mapping
+    /// @notice Returns the index of the value, which is an address, for linked list
+     /// @param newValue arbitraryCounter value assigned to each new gift
+    /// @dev Adds new entrant to bottom of mapping instead of top
     function _findIndex(uint256 newValue) 
         internal 
         view 
@@ -216,11 +224,16 @@ contract SecretSanta is SecretSantaInterface{
                 candidateAddress = giftDestinationMapping[candidateAddress];
             }
     }
-        
+    
+    /// @notice Checks if the an address preceeds another adddress
+    /// @param _address Address in question
+    /// @param _prevEntrant Previous address in question
     function _isPrevEntrant(address _address, address _prevEntrant) internal view returns(bool) {
         return giftDestinationMapping[_prevEntrant] == _address;
     }
   
+    /// @notice Finds the previous address in the linked list for a given address
+    /// @param _address Address in question
     function _findPrevEntrant(address _address) internal view returns(address) {
         
         if (_address == GUARD){
@@ -236,12 +249,14 @@ contract SecretSanta is SecretSantaInterface{
         return address(0);
     }
 
-    //only santa can check on the balance. 
+    /// @notice Check total balance of contract
+    /// @dev Only santa can check on the balance
     function checkContractBalance() public view onlySanta returns(uint){
         return address(this).balance;
     }
 
-    //get endTime for front end
+    /// @notice Get endTime for uint testing purposes
+    /// @dev Used mainly to see if entTime can get passed from contract to JS
     function getEndTime() public view returns(uint){
         return endTime;
     }
