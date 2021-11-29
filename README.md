@@ -5,6 +5,14 @@ https://final-proj-con-brando.netlify.app/
 ### Prerequisites
 * Node JS >= v14.17.6
 * Truffle and Ganache
+### Contract
+* Deploy your instance of contract in Remix (injected Web3)
+### Front End
+* Copy address of remix deployed instance of secret secret santa
+* Copy the ABI of the contract code from remix and put it into dAPP.js
+* Download files onto local computer
+* Go to "FrontEnd" directory (cd FrontEnd in terminal)
+* Open http://localhost:8080
 
 # blockchain-developer-bootcamp-final-project
 
