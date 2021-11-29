@@ -6,16 +6,6 @@ const SecretSanta = artifacts.require("SecretSanta");
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
 
-/*
-Unit tests:
-1. Contract got deployed (done)
-2. Group Participants work (done)
-3. New Address can enter (done)
-4. New address will be given the gift owned by previous address (done)
-5. maxValue modifier works? (done)
- 
-*/
-
 let secretSantaInstance;
 
 //before each
@@ -24,13 +14,13 @@ beforeEach(async () => {
 });
 
 contract("SecretSanta", function (accounts) {
-  //Unit test 1
+  //Unit test 1: Test that the contract was deployed
   it("should assert true", async function () {
     // await SecretSanta.deployed();
     return assert.isTrue(true);
   });
 
-  //unit test 2
+  //unit test 2: Test that the group participant array works properly
   it("Should allow new address to enter", async () => {
     await secretSantaInstance.enterSecretSanta("Gift 2", "Gift 2's URL", {
       from: accounts[1],
@@ -41,7 +31,7 @@ contract("SecretSanta", function (accounts) {
     return assert.isTrue(true);
   });
 
-  //Unit test 3
+  //Unit test 3: Test that new addresses can enter the SecretSanta contract
   it("Should return all participants", async () => {
     await secretSantaInstance.enterSecretSanta("Gift 2", "Gift 2's URL", {
       from: accounts[2],
@@ -70,7 +60,7 @@ contract("SecretSanta", function (accounts) {
     }
   });
 
-  //unit test 4
+  //unit test 4: Test that new entrants received gifts from the address directly preceeding them
 
   it("should assign new entrant to receive previous entrants gift", async () => {
 
@@ -80,7 +70,7 @@ contract("SecretSanta", function (accounts) {
   });
 
 
-  //unit test 5
+  //unit test 5: Test that the budget cap of 1 eth works
   it("should fail if I put too much money", async() => {
     
     
