@@ -1,39 +1,10 @@
-/*
------
-THIS VERSION WILL NOT USE ORACLES. 
-I HAD DIFFICULTY PERFORMING UNIT TESTS WITH ORACLES GIVEN THE ASYNC NATURE
-THIS VERSION WILL ONLY REQUIRE 1 WEI ENTRY 
------
-New Flow:
-1. Enter into contract by creating gift (done)
-2. Others also enter contract by creating gift (done)
-3. The previous entrant will give gift to new entrant (done)
-4. Assign the new entrant the ownership of the gift struct (done)
-5. When the timer expires, previous entrant sends eth value to new entrant
-6. the new entrant get's access (visually on webpage) to the gift and has the option to purchase with newly received eth!
-
-//Checklist
-
-Commented to NatSpec? TBD
-
-Two design patterns:
-1. interface and inheretance - done
-2. Access Control Design Patterns (Restricted Access - Only Santa) - done
-
-Attack Vectors: Go through this more carefully
-1. Using specific pragma - done
-2. Proper use of require - done
-3. Use modifiers only for validation - done
-4. Cause Effect interactions (giftReveal() - guarded against re-entrancy) - done
-
-Inheriting from at least 1 interface - done
-
-Easily compiled - done
-    
-*/
-
 pragma solidity 0.8.10;
 
+
+/// @title Interface for SecretSanta contract containing events!
+/// @author Brandon
+/// @notice Contains events to emit information about relevant gifts to end user
+/// @dev Declaring the giftSruct struct here in order to include in downstream interfaces/contracts
 
 interface EventsInterface {
      struct giftStruct{
@@ -42,11 +13,23 @@ interface EventsInterface {
         string giftUrl;
     }
     
+    /// @notice Emitted when a user successfully participates in secret santa
+    /// @param _giftOriginator address of new participant
+    /// @param _gift information of gift in struct form (name, value, url)
+    /// @param _giftRecipient address of the gift giver to the new participant
     event giftOriginated(address _giftOriginator, giftStruct _gift, address _giftRecipient);
-    event giftRevealed(giftStruct);
+    
+    /// @notice Emitted when participant chooses to reveal their incoming gift
+    /// @param _gift information of gift in struct form (name, value, url)
+    event giftRevealed(giftStruct _gift);
 }
 
+/// @title Interface for main SecretSanta contract!
+/// @author Brandon
+/// @notice Contains events to emit information about relevant gifts to end user
+/// @dev Function explanations in SecretSanta contract
 interface SecretSantaInterface is EventsInterface{
+
     function enterSecretSanta(string memory _giftName, string memory _giftUrl) external payable;
     function giftTransfer(address _myAddress) external payable;
     function giftReveal(address _myAddress) external view returns(giftStruct memory);
@@ -55,45 +38,68 @@ interface SecretSantaInterface is EventsInterface{
 
 }
 
+/// @title Contract for decentralized Secret Santa!
+/// @author Brandon
+/// @notice Allows participant to either keep the gift value in eth or redeem the item by following a gift URL 
+/// @dev Designed to allow oracle price information (i.e. Chainlink)
+
 contract SecretSanta is SecretSantaInterface{
     
-    //owner of the contract. In case for permissioning
+    /// @notice Owner of the contract. In case for permissioning
     address public santa;
-    //time when entrants are barred from entering and when gifts get distributed
+
+    /// @notice Time when entrants are barred from entering and when gifts get distributed
+    /// @dev For final proj version, this is not used so we can demonstrate full functionality
     uint public endTime;
-    //who created the gift struct
+
+    /// @notice Mapping that shows who created the gift struct
     mapping(address => giftStruct) public giftOriginatorMapping;
-    //who currently owns the gift Struct
+
+    /// @notice Mapping that shows who currently owns a particular gift Struct
+    /// @dev This is used to "assign" gift recipients
     mapping(address => giftStruct) public giftOwnershipMapping;
-    //gift giving mapping
+
+    /// @notice Linked list mapping that points last entrant to newest entrant
+    /// @dev This is used to create a closed loop to pass gifts around
     mapping(address => address) giftDestinationMapping;
-    //mapping used to order entrants
+    
+    /// @notice mapping used to order/rank entrants in the giftDestinationMapping;
+    /// @dev Used in conjuction with giftDestinationMapping and arbitraryCounter to ensure gift gets passed around in sequential order
     mapping(address => uint) rankMapping;
-    //arrays
+
+    /// @notice Array of all participants
+    /// @dev Used for QA purposes
     address[] private groupParticipantsArray;
-    //Guard
+
+    /// @notice To create header and footer guard for the linked list
     address private GUARD;
-    //arbitrary counter for giftDestinationMapping
+
+    /// @notice arbitrary counter for giftDestinationMapping
     uint arbitraryCounter = 0;
-    //security mapping for cause-effect interaction
+
+    /// @notice Security mapping for cause-effect interaction
+    /// @dev Used to protect against re-entrancy
     mapping(address => bool) public giftRevealMapping;  
     
-    //constructor where first entrant (Santa) needs to particpate too
+    /// @notice constructor where first entrant (Santa) needs to particpate too
+    /// @notice All participants, even Santa, needs to pay minimum
+    /// @notice This SecretSanta is meant to invite all-comers. Therefore, the price can't be too high.
+    /// @param _firstGiftName Name of initial gift
+    /// @param _firstGiftUrl URL of initial gift
+    /// @dev There needs to be an initial gift in the contract for link list to work properly. Contract deployer will have that responsibility
+    /// @dev The participant's msg.value will be the giftValue of the giftStruct
+    /// @dev In version with oracle, the max value would be $20USD or something like thats
+    /// @dev endTime not used in final proj version. Real dAPP would end on Christmas. Also, likely not based off block.timestamp.
+    /// @dev arbitraryCounter needs to be incremented after EVERY new particpant (Santa included)
     constructor(string memory _firstGiftName, string memory _firstGiftUrl) payable {
         require(msg.value >= 1 wei, "C'mon Santa...you gotta pay up too!");
-        //maximum 1 ether 
         require(msg.value <= 1 ether, "Value is too high! This is a reasonable secret santa");
-        //Real dAPP would end on Christmas (estimated block height or oracle)
         endTime = block.timestamp + 60;
-        
-        //Deployer is the first entrant (santa)
         santa = msg.sender;
-        //This ensures that a gift is always sent to an active address (assuming link list method)
         GUARD = santa;
         giftDestinationMapping[GUARD] = GUARD;
         groupParticipantsArray.push(santa);
-        
-        //santa's gift struct
+    
         giftStruct memory firstGiftStruct = giftStruct({
             giftName : _firstGiftName,
             giftValue : msg.value,
@@ -101,96 +107,80 @@ contract SecretSanta is SecretSantaInterface{
         });
         
         giftOriginatorMapping[santa] = firstGiftStruct;
-        //increment counter used to order entrants in linkedlist
         arbitraryCounter++;
     }
 
-    //permissioning modifier
     modifier onlySanta() {
         require(msg.sender == santa, "Only Santa can call this!");
         _;
     }
     
+    /// @notice Function called to enter contract and particpate in Secret Santa
+    /// @param _giftName Name of new gift
+    /// @param _giftUrl URL of new gift
+    /// @dev Require statements ensure user is not already in contract and establish min and max values
+    /// @dev Creates new giftStruct, places it into respective mappings and arrays, updates linked list
+    /// @dev Logic assigns previous entrant's gift to be given to new entrant
     function enterSecretSanta(string memory _giftName, string memory _giftUrl) 
     override 
     public 
     payable {
-        //hacky way to ensure user is not already in contract. Maybe think of something else
         require(giftOriginatorMapping[msg.sender].giftValue == 0, "Already in secret santa!");
-        //10usd minimum
         require(msg.value >= 1 wei, "1 Wei minimum");
-        //maximum 1 ether 
         require(msg.value <= 1 ether, "Value is too high! This is a reasonable secret santa");
-        //close access on set date
-        // require(block.timestamp < endTime, "You missed your chance!");
         
-        //front end will require just these inputs
         giftStruct memory newGiftStruct = giftStruct({
             giftName : _giftName,
             giftValue : msg.value,
             giftUrl : _giftUrl
         });
         
-        //add to giftOriginatorMapping;
         giftOriginatorMapping[msg.sender] = newGiftStruct;
-        //push new entrant into groupParticipantsArray
         groupParticipantsArray.push(msg.sender);
         
-        //update giftDestinationMapping via linkedList approach
-        
-        //index for rankMapping
         address index = _findIndex(arbitraryCounter);
-        //update rank table
         giftDestinationMapping[msg.sender] = giftDestinationMapping[index];
         giftDestinationMapping[index] = msg.sender;
         
         address prevEntrant = _findPrevEntrant(msg.sender);
         address lastEntrant = _findPrevEntrant(GUARD);
-        
-        //new entrant goes after previous entrant instead of before
+
         giftOwnershipMapping[msg.sender] = giftOriginatorMapping[prevEntrant];
-        //give santa (first entrant) the gift of the last entrant
         giftOwnershipMapping[santa] = giftOriginatorMapping[lastEntrant];
-        //set new entrant to true. Used to prevent re-entrancy
+
         giftRevealMapping[msg.sender] = true;
         giftRevealMapping[santa] = true;
-        
-        //emit 
+    
         emit giftOriginated(msg.sender, newGiftStruct, prevEntrant);
-        
-        //increment counter
         arbitraryCounter++;
     }
     
-    //On Christmas day (or any arbitrary date), reveal to entrant the gift they received!
-    //have individual enter their address and return the gift Struct!
+
+    /// @notice Transfers giftValue of the giftStruct to be received
+    /// @param _myAddress address of partipant (your address)
+    /// @dev giftRevealMapping bool updated to prevent re-entrancy
     function giftTransfer(address _myAddress) override public payable{
-        //only address owner can call this, implying they need to be in the contract
         require(msg.sender == _myAddress, "HEY! This isn't you. Don't make me give you coal...");
-        //can't reveal gift before "Christmas"!
-        // require(block.timestamp >= endTime, "HEY! It's not Christmas yet...be patient");
         require(giftRevealMapping[_myAddress] == true, "Don't commit a re-entrancy attack!");
-        //implement "cause-effect-interactions"
-        //set bool to false to prevent re-entrancy
+
         giftRevealMapping[_myAddress] = false;
-        //transfer funds to address
+
         (bool sent, bytes memory data) = _myAddress.call{value : giftOwnershipMapping[_myAddress].giftValue}("");
-        //throw error if funds were not transfered
         require(sent, "Failed to transfer funds");
     }
 
 
-    ///argh....i need to have my return functions ONLY be view
+    /// @notice Reveals the giftStruct (name, value, url)
+    /// @param _myAddress address of partipant (your address)
     function giftReveal(address _myAddress) override public view returns(giftStruct memory){
-
         require(msg.sender == _myAddress, "HEY! This isn't you. Don't make me give you coal...");
-        //can't reveal gift before "Christmas"!
-        // require(block.timestamp >= endTime, "HEY! It's not Christmas yet...be patient");
         return giftOwnershipMapping[_myAddress];
     }
     
+
+    /// @notice The following are helper functions
     
-    //helper functions
+    ///
     function getGroupParticipants() override public view returns(address[] memory){
         return groupParticipantsArray;
         
