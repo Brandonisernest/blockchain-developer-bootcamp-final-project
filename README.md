@@ -5,6 +5,7 @@ https://final-proj-con-brando.netlify.app/
 ### Prerequisites
 * Node JS >= v14.17.6
 * Truffle and Ganache
+* Solc 0.8.10 (solidity compiler)
 ### Contract
 * Deploy your instance of contract in Remix (injected Web3)
 ### Front End
