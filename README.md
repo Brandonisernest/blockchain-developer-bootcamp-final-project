@@ -8,6 +8,7 @@ https://final-proj-con-brando.netlify.app/
 * Solc 0.8.10 (solidity compiler)
 ### Contract
 * Deploy your instance of contract in Remix (injected Web3)
+  1. Mine was in Rinkeby
 ### Front End
 * Copy address of remix deployed instance of secret secret santa
 * Copy the ABI of the contract code from remix and put it into dAPP.js
