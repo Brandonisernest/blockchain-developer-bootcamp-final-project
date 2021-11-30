@@ -26,7 +26,7 @@ Hohoho! It's that time again! Tis the season for getting, but more importantly, 
 
 Here's how it works: A new particpant becomes eligible to receive a gift AFTER that participant submits their own gift to give! To submit a gift, the participant will provide the gift name, the value of the gift in ETH, and a (hopefully valid) URL for the gift _(Note: Please don't go to the URL for the final project version, just ignore it)_. When that submission (transaction) is successful, they will be eligible to receive a "random" gift from another "random" participant.
 
-IMPORTANT: You can only enter your address ONCE. Otherwise, you get coal in the form of wasted gas fees :P
+**IMPORTANT: You can only enter your address ONCE. Otherwise, you get coal in the form of wasted gas fees :P**
 
 *(Disclaimer: In the REAL version, you won't be able to see your gift until Christmas time. Trust me, It'll work! Also, the gift limit will be $20 USD, and not the 1 Eth in the final project version thanks to help from oracles.)*
 
