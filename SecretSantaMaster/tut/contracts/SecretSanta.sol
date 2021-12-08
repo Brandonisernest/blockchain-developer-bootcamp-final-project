@@ -138,6 +138,9 @@ contract SecretSanta is SecretSantaInterface{
         groupParticipantsArray.push(msg.sender);
         
         address index = _findIndex(arbitraryCounter);
+        //Now I understand....
+        //First, point the new sender to what the index was previously pointing to (the last entrant)
+        //Next, set the index to point to new sender
         giftDestinationMapping[msg.sender] = giftDestinationMapping[index];
         giftDestinationMapping[index] = msg.sender;
         
