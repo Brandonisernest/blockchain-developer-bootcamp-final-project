@@ -141,6 +141,8 @@ contract SecretSanta is SecretSantaInterface{
         //Now I understand....
         //First, point the new sender to what the index was previously pointing to (the last entrant)
         //Next, set the index to point to new sender
+        //In other words, the new entrant is now pointing to what the index was previously pointing to
+        //and the index is now pointing to the new entrant.
         giftDestinationMapping[msg.sender] = giftDestinationMapping[index];
         giftDestinationMapping[index] = msg.sender;
         
